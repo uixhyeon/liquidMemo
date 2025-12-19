@@ -7,12 +7,20 @@ import type { DocStatus } from '@/types'
 import { 
   Plus, FolderOpen, Folder, FileText, 
   Trash2, ChevronRight, ChevronDown, MoreVertical,
-  ExternalLink, Info, Copy, Palette, Pencil
+  ExternalLink, Info, Copy, Palette, Pencil, CornerDownLeft, LogOut
 } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/auth'
 import { CATEGORY_COLORS, PROJECT_COLORS } from '@/types'
 
 const router = useRouter()
 const store = useAppStore()
+const auth = useAuthStore()
+
+// 로그아웃
+const handleLogout = async () => {
+  await auth.logout()
+  router.push('/')
+}
 
 // 선택 상태
 const selectedCategoryId = ref<string | null>(null)
@@ -312,6 +320,9 @@ const formatDateTime = (timestamp: number) => {
     <aside class="sidebar">
       <div class="sidebar-header">
         <h1 class="logo">Liquid Memo</h1>
+        <button class="logout-btn" @click="handleLogout" title="로그아웃">
+          <LogOut :size="18" />
+        </button>
       </div>
       
       <div class="tree">
@@ -332,6 +343,9 @@ const formatDateTime = (timestamp: number) => {
             @keyup.esc="showNewCategory = false"
             autofocus
           />
+          <button class="enter-btn" @click="handleCreateCategory" title="확인 (Enter)">
+            <CornerDownLeft :size="14" />
+          </button>
         </div>
         
         <!-- 카테고리 트리 -->
@@ -426,6 +440,9 @@ const formatDateTime = (timestamp: number) => {
                 @keyup.esc="showNewProject = false"
                 autofocus
               />
+              <button class="enter-btn" @click="handleCreateProject" title="확인 (Enter)">
+                <CornerDownLeft :size="14" />
+              </button>
             </div>
           </div>
         </div>
@@ -445,7 +462,8 @@ const formatDateTime = (timestamp: number) => {
               {{ selectedCategory.name }}
             </span>
             <ChevronRight v-if="selectedProject" :size="16" class="crumb-sep" />
-            <span v-if="selectedProject" class="crumb">
+            <span v-if="selectedProject" class="crumb project-crumb">
+              <span class="color-dot" :style="{ background: selectedProject.color }" />
               {{ selectedProject.name }}
             </span>
           </div>
@@ -655,12 +673,31 @@ const formatDateTime = (timestamp: number) => {
 .sidebar-header {
   padding: 20px;
   border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   
   .logo {
     font-size: 18px;
     font-weight: 700;
     color: var(--text-ink);
     letter-spacing: -0.02em;
+  }
+  
+  .logout-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: var(--text-soft);
+    transition: all 0.15s;
+    
+    &:hover {
+      background: var(--bg-warm);
+      color: var(--ink-red);
+    }
   }
 }
 
@@ -704,13 +741,15 @@ const formatDateTime = (timestamp: number) => {
 .new-input {
   padding: 6px 8px;
   margin-bottom: 8px;
+  display: flex;
+  gap: 6px;
   
   &.nested {
     padding-left: 32px;
   }
   
   input {
-    width: 100%;
+    flex: 1;
     padding: 8px 12px;
     border: 1px solid var(--border-medium);
     border-radius: 6px;
@@ -719,6 +758,28 @@ const formatDateTime = (timestamp: number) => {
     
     &:focus {
       border-color: var(--ink-blue);
+    }
+  }
+  
+  .enter-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--bg-muted);
+    color: var(--text-soft);
+    border-radius: 6px;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    
+    &:hover {
+      background: var(--border-medium);
+      color: var(--text-ink);
+    }
+    
+    &:active {
+      transform: scale(0.95);
     }
   }
 }
@@ -931,6 +992,19 @@ const formatDateTime = (timestamp: number) => {
     .crumb {
       font-weight: 600;
       color: var(--text-ink);
+    }
+    
+    .project-crumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      
+      .color-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
     }
     
     .crumb-sep {

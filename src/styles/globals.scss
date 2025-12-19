@@ -46,10 +46,15 @@
   box-sizing: border-box;
 }
 
-html, body, #app {
+html, body {
   height: 100%;
   width: 100%;
-  overflow: hidden;
+}
+
+#app {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
 }
 
 body {
